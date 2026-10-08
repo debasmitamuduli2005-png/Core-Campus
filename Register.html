@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Create your SmartCampus student account and bring your campus essentials together.">
+  <title>Create account | SmartCampus</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="public-page">
+  <main class="register-wrap">
+    <section class="register-aside">
+      <a class="public-brand" href="index.html" aria-label="SmartCampus home">
+        <span class="public-brand-mark"><i class="fa-solid fa-graduation-cap"></i></span>
+        <span>SmartCampus</span>
+      </a>
+      <div class="register-aside-copy">
+        <p class="eyebrow"><span></span> Start with one account</p>
+        <h1>Your campus day,<br><em>in better sync.</em></h1>
+        <p>Keep your schedule, attendance, assignments and campus services close at hand.</p>
+      </div>
+      <p class="register-aside-foot">SmartCampus Institute of Technology · Frontend demo prototype</p>
+    </section>
+
+    <section class="register-main">
+      <div class="register-form-wrap">
+        <div class="register-toplink"><span>Already have an account?</span> <a href="Login.html">Sign in</a></div>
+        <h2>Create your account</h2>
+        <p>Set up your student profile to get started.</p>
+
+        <div id="registerError" class="register-error" role="alert" hidden></div>
+        <form class="register-form" id="registerForm">
+          <div class="field">
+            <label class="label" for="name">Full name</label>
+            <input class="input" id="name" name="name" type="text" placeholder="Your name" autocomplete="name" maxlength="80" required>
+          </div>
+          <div class="field">
+            <label class="label" for="email">Campus email</label>
+            <input class="input" id="email" name="email" type="email" placeholder="you@campus.edu" autocomplete="email" maxlength="120" required>
+          </div>
+          <div class="field">
+            <label class="label" for="department">Department</label>
+            <select class="select" id="department" name="department" required>
+              <option value="" selected disabled>Select your department</option>
+              <option value="CSE">Computer Science &amp; Engineering</option>
+              <option value="ECE">Electronics &amp; Communication</option>
+              <option value="ME">Mechanical Engineering</option>
+              <option value="CE">Civil Engineering</option>
+            </select>
+          </div>
+          <div class="field">
+            <label class="label" for="password">Password</label>
+            <input class="input" id="password" name="password" type="password" placeholder="At least 8 characters" autocomplete="new-password" minlength="8" required>
+          </div>
+          <div class="field">
+            <label class="label" for="confirmPassword">Confirm password</label>
+            <input class="input" id="confirmPassword" name="confirmPassword" type="password" placeholder="Enter your password again" autocomplete="new-password" minlength="8" required>
+          </div>
+          <button class="register-submit" id="registerButton" type="submit"><i class="fa-solid fa-user-plus"></i> Create account</button>
+        </form>
+        <p class="register-note">This frontend demo stores account details in this browser only. Do not use a real password.</p>
+      </div>
+    </section>
+  </main>
+
+  <script src="js/app.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    (function () {
+      'use strict';
+      var SC = window.SC;
+      var existing = SC.auth.user();
+      if (existing) { location.href = SC.DEMO_ACCOUNTS[existing.role].file; return; }
+
+      var form = document.getElementById('registerForm');
+      var errorBox = document.getElementById('registerError');
+      form.addEventListener('submit', function (event) {
+        event.preventDefault();
+        errorBox.hidden = true;
+        var password = document.getElementById('password').value;
+        if (password !== document.getElementById('confirmPassword').value) {
+          errorBox.textContent = 'Your passwords do not match.';
+          errorBox.hidden = false;
+          return;
+        }
+        var result = SC.auth.register(
+          document.getElementById('name').value,
+          document.getElementById('email').value,
+          password,
+          document.getElementById('department').value
+        );
+        if (!result.ok) {
+          errorBox.textContent = result.error;
+          errorBox.hidden = false;
+          return;
+        }
+        var button = document.getElementById('registerButton');
+        button.disabled = true;
+        button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Creating account';
+        setTimeout(function () {
+          location.href = 'Login.html?registered=1&email=' + encodeURIComponent(result.user.email);
+        }, 350);
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign in | SmartCampus Portal</title>
+<meta name="description" content="SmartCampus Management Portal — a single digital platform for academics, campus services and administration.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎓</text></svg>">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="login-wrap">
+  <section class="login-visual">
+    <div class="login-brand"><span class="brand-logo"><i class="fa-solid fa-graduation-cap"></i></span><strong>SmartCampus</strong></div>
+    <div class="login-hero">
+      <h1>One portal for everything campus.</h1>
+      <p>Timetables, attendance, assignments, events, the library and the help desk, brought together for students, faculty and administration.</p>
+      <ul class="login-points">
+        <li><i class="fa-solid fa-bolt"></i><span>Real-time dashboards that update the moment a record changes.</span></li>
+        <li><i class="fa-solid fa-people-group"></i><span>Purpose-built views for students, faculty and administrators.</span></li>
+        <li><i class="fa-solid fa-shield-halved"></i><span>A safe sandbox: every action here is demo data in your browser.</span></li>
+      </ul>
+    </div>
+    <p class="login-foot">SmartCampus Institute of Technology · Frontend demo prototype</p>
+  </section>
+
+  <section class="login-panel">
+    <div class="login-card">
+      <h2>Welcome back</h2>
+      <p class="muted">Choose your role and sign in to continue.</p>
+
+      <div class="role-tabs" role="tablist" aria-label="Choose a role">
+        <button class="role-tab active" data-role="student" type="button"><i class="fa-solid fa-user-graduate"></i>Student</button>
+        <button class="role-tab" data-role="faculty" type="button"><i class="fa-solid fa-chalkboard-user"></i>Faculty</button>
+        <button class="role-tab" data-role="admin" type="button"><i class="fa-solid fa-user-shield"></i>Admin</button>
+      </div>
+
+      <div id="loginError" class="login-error" hidden><i class="fa-solid fa-circle-exclamation"></i><span></span></div>
+
+      <form id="loginForm" class="login-form" novalidate>
+        <div class="field">
+          <label class="label" for="email">Email address</label>
+          <input class="input" type="email" id="email" name="email" placeholder="you@campus.edu" autocomplete="username" required>
+        </div>
+        <div class="field">
+          <label class="label" for="password">Password</label>
+          <div class="pw-wrap">
+            <input class="input" type="password" id="password" name="password" placeholder="Enter your password" autocomplete="current-password" required>
+            <button type="button" class="pw-toggle" id="pwToggle" aria-label="Show password"><i class="fa-regular fa-eye"></i></button>
+          </div>
+        </div>
+        <div class="remember-row">
+          <label class="check"><input type="checkbox" id="remember"><span>Keep me signed in</span></label>
+          <span class="muted" style="font-size:.8rem">Forgot password? <span title="Not needed in this demo">Contact admin</span></span>
+        </div>
+        <button type="submit" class="btn btn-primary block-btn" id="loginBtn"><i class="fa-solid fa-right-to-bracket"></i> Sign in</button>
+      </form>
+
+      <p class="auth-switch">New to SmartCampus? <a href="Register.html">Create a student account</a></p>
+
+      <details class="demo-creds" open>
+        <summary><i class="fa-solid fa-chevron-right"></i> Demo login credentials</summary>
+        <div class="cred-row"><span><i class="fa-solid fa-user-graduate"></i> Student</span><code>student@campus.edu / student123</code><button class="fill-btn" data-fill="student">Use</button></div>
+        <div class="cred-row"><span><i class="fa-solid fa-chalkboard-user"></i> Faculty</span><code>faculty@campus.edu / faculty123</code><button class="fill-btn" data-fill="faculty">Use</button></div>
+        <div class="cred-row"><span><i class="fa-solid fa-user-shield"></i> Admin</span><code>admin@campus.edu / admin123</code><button class="fill-btn" data-fill="admin">Use</button></div>
+      </details>
+    </div>
+  </section>
+</div>
+
+<div id="toastRoot" class="toast-root"></div>
+
+<script src="js/app.js"></script>
+<script src="js/auth.js"></script>
+<script>
+(function () {
+  'use strict';
+  var SC = window.SC;
+  SC.prefs.apply();
+
+  // If already signed in, go straight to the right dashboard.
+  var existing = SC.auth.user();
+  if (existing) { location.href = SC.DEMO_ACCOUNTS[existing.role].file; }
+
+  var registration = new URLSearchParams(location.search);
+  var registeredEmail = registration.get('email');
+  if (registration.get('registered') === '1' && registeredEmail) {
+    document.getElementById('email').value = registeredEmail;
+    SC.ui.toast('Account created. Sign in with your new credentials.', 'success');
+  }
+
+  var roleTabs = document.querySelectorAll('.role-tab');
+  var selectedRole = 'student';
+  roleTabs.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      roleTabs.forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      selectedRole = btn.dataset.role;
+      var acc = SC.DEMO_ACCOUNTS[selectedRole];
+      if (!document.getElementById('email').value) document.getElementById('email').value = acc.email;
+    });
+  });
+
+  document.querySelectorAll('[data-fill]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var acc = SC.DEMO_ACCOUNTS[btn.dataset.fill];
+      document.getElementById('email').value = acc.email;
+      document.getElementById('password').value = acc.password;
+      roleTabs.forEach(function (b) { b.classList.toggle('active', b.dataset.role === btn.dataset.fill); });
+      selectedRole = btn.dataset.fill;
+      SC.ui.toast('Demo credentials filled in. Choose Sign in to continue.', 'info');
+    });
+  });
+
+  document.getElementById('pwToggle').addEventListener('click', function () {
+    var pw = document.getElementById('password');
+    var isPw = pw.type === 'password';
+    pw.type = isPw ? 'text' : 'password';
+    this.innerHTML = '<i class="fa-regular fa-eye' + (isPw ? '-slash' : '') + '"></i>';
+    this.setAttribute('aria-label', isPw ? 'Hide password' : 'Show password');
+  });
+
+  document.getElementById('loginForm').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var email = document.getElementById('email').value.trim();
+    var password = document.getElementById('password').value;
+    var errBox = document.getElementById('loginError');
+    errBox.hidden = true;
+    if (!email || !password) {
+      errBox.querySelector('span').textContent = 'Please enter both an email address and a password.';
+      errBox.hidden = false;
+      return;
+    }
+    var res = SC.auth.login(email, password);
+    if (!res.ok) {
+      errBox.querySelector('span').textContent = res.error;
+      errBox.hidden = false;
+      return;
+    }
+    var btn = document.getElementById('loginBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Signing in…';
+    setTimeout(function () { location.href = SC.DEMO_ACCOUNTS[res.user.role].file; }, 350);
+  });
+})();
+</script>
+</body>
+</html>
